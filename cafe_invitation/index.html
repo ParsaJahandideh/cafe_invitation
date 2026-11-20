@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>هماهنگی کافه</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { overflow-x: hidden; }
+  body {
+    font-family: 'Vazirmatn', tahoma, sans-serif;
+    margin: 0;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f4f1ea 0%, #e8e0d5 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+    color: #4a3b32;
+  }
+  .card {
+    background: #fffdf9;
+    padding: 2rem 1.5rem;
+    border-radius: 24px;
+    box-shadow: 0 20px 40px rgba(109, 76, 65, 0.12);
+    width: 100%;
+    max-width: 440px;
+  }
+  h1 { font-size: 1.5rem; text-align: center; margin: 0 0 0.5rem; line-height: 1.7; }
+  h2 { font-size: 1.2rem; text-align: center; margin: 0 0 1.25rem; }
+  p { line-height: 1.8; text-align: center; margin: 0.5em 0; }
+
+  .btn {
+    display: inline-block;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 14px;
+    font-family: inherit;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.2s, background 0.2s;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary {
+    background: linear-gradient(135deg, #8d6e63, #6d4c41);
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(109, 76, 65, 0.3);
+  }
+  .btn-secondary {
+    background: #efebe9;
+    color: #6d4c41;
+  }
+  .btn:disabled { cursor: not-allowed; }
+
+  .choice-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 1.75rem;
+  }
+  .choice-buttons .btn { width: 100%; padding: 16px; font-size: 1.05rem; }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 0.5rem;
+    justify-content: center;
+  }
+  .chip {
+    padding: 10px 16px;
+    border: 2px solid #d7ccc8;
+    background: #fff;
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: #6d4c41;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .chip:active { transform: scale(0.95); }
+
+  .chip.selected {
+    background: #8d6e63;
+    border-color: #8d6e63;
+    color: #fff;
+    box-shadow: 0 0 0 2px rgba(209, 138, 58, 0.4);
+  }
+
+  .cafe-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 0.5rem;
+  }
+  .cafe-option {
+    padding: 0;
+    overflow: hidden;
+    border: 2px solid #e0d7d0;
+    border-radius: 16px;
+    background: #fff;
+    color: #4a3b32;
+    font-family: inherit;
+    cursor: pointer;
+    text-align: center;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+  }
+  .cafe-option:active { transform: scale(0.98); }
+  .cafe-option[aria-pressed="true"] {
+    border-color: #8d6e63;
+    box-shadow: 0 0 0 3px rgba(141, 110, 99, 0.18);
+    background: #f8f3ef;
+  }
+  .cafe-option img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    background: #eee8e2;
+  }
+  .cafe-fallback {
+    display: none;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    background: #eee8e2;
+    color: #8d6e63;
+    font-size: 0.9rem;
+  }
+  .cafe-option.image-missing img { display: none; }
+  .cafe-option.image-missing .cafe-fallback { display: flex; }
+  .cafe-name {
+    display: block;
+    padding: 11px 8px;
+    font-size: 0.95rem;
+    font-weight: 700;
+  }
+
+  .step { margin-bottom: 1.5rem; }
+  .step-label {
+    display: block;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-align: center;
+    color: #6d4c41;
+  }
+
+  .clock-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .clock {
+    width: 260px;
+    height: 260px;
+    touch-action: none;
+    user-select: none;
+    filter: drop-shadow(0 8px 20px rgba(109, 76, 65, 0.15));
+  }
+  .digital-time {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #4a3b32;
+    font-family: 'Vazirmatn', tahoma, sans-serif;
+    letter-spacing: 1px;
+  }
+  .ampm-toggle {
+    display: flex;
+    background: #efebe9;
+    border-radius: 999px;
+    padding: 4px;
+    gap: 2px;
+  }
+  .ampm-toggle button {
+    padding: 6px 18px;
+    border: none;
+    background: transparent;
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    color: #8d6e63;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .ampm-toggle button.active {
+    background: #8d6e63;
+    color: #fff;
+  }
+
+  .summary {
+    text-align: center;
+    color: #8d6e63;
+    font-size: 0.9rem;
+    min-height: 1.4rem;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+  }
+
+  .success-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    background: #efebe9;
+    color: #6d4c41;
+    font-size: 2.5rem;
+    font-weight: 700;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeIn 0.4s ease; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .eyval-title {
+    font-size: 1.9rem;
+    text-align: center;
+    margin: 0 0 1.5rem;
+    color: #6d4c41;
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <!-- صفحه ۱: دعوت -->
+    <div class="screen active" id="screen-invite">
+      <div style="font-size: 3rem; text-align: center; margin-bottom: 0.5rem;">☕</div>
+      <h1>برای این بار چه زمانی برات مناسبه؟</h1>
+      <p style="color: #8d6e63; font-size: 0.9rem;">روزها، ساعت و کافه‌ی موردنظرت رو انتخاب کن.</p>
+      <div class="choice-buttons">
+        <button class="btn btn-primary" id="btn-yes">انتخاب زمان</button>
+        <button class="btn btn-secondary" id="btn-no">نه</button>
+      </div>
+    </div>
+
+    <!-- صفحه نه -->
+    <div class="screen" id="screen-no">
+      <h2>باشه.</h2>
+      <p style="color: #8d6e63;">ممنون که اطلاع دادی.</p>
+    </div>
+
+    <!-- صفحه ۲: جزئیات -->
+    <div class="screen" id="screen-details">
+      <h2 class="eyval-title">جزئیات هماهنگی</h2>
+
+      <div class="step">
+        <label class="step-label">چه روزهایی برات مناسبه؟ (چندتا هم قبوله)</label>
+        <div class="chips" id="dayChips">
+          <button class="chip" data-value="شنبه">شنبه</button>
+          <button class="chip" data-value="یکشنبه">یکشنبه</button>
+          <button class="chip" data-value="دوشنبه">دوشنبه</button>
+          <button class="chip" data-value="سه‌شنبه">سه‌شنبه</button>
+          <button class="chip" data-value="چهارشنبه">چهارشنبه</button>
+          <button class="chip" data-value="پنجشنبه">پنجشنبه</button>
+          <button class="chip" data-value="جمعه">جمعه</button>
+        </div>
+      </div>
+
+      <div class="step">
+        <label class="step-label">کدوم کافه رو ترجیح می‌دی؟</label>
+        <div class="cafe-grid" id="cafeOptions">
+          <button class="cafe-option" type="button" data-value="کافه رئیس پاسداران" aria-pressed="false">
+            <img src="images/cafe-raees-pasdaran.png" alt="تصویر کافه رئیس پاسداران" loading="lazy">
+            <span class="cafe-fallback">تصویر کافه رئیس پاسداران</span>
+            <span class="cafe-name">کافه رئیس پاسداران</span>
+          </button>
+          <button class="cafe-option" type="button" data-value="کافه کای" aria-pressed="false">
+            <img src="images/cafe-kai.png" alt="تصویر کافه کای" loading="lazy">
+            <span class="cafe-fallback">تصویر کافه کای</span>
+            <span class="cafe-name">کافه کای</span>
+          </button>
+          <!-- برای اضافه کردن کافه، یکی از دکمه‌های بالا را کپی و نام، data-value و مسیر عکس را عوض کن. -->
+        </div>
+      </div>
+
+      <div class="step">
+        <label class="step-label">چه ساعتی؟ (عقربه‌ها رو بکش)</label>
+        <div class="clock-container">
+          <svg class="clock" id="clock" viewBox="0 0 220 220">
+            <circle cx="110" cy="110" r="105" fill="#fffdf9" stroke="#d7ccc8" stroke-width="2"/>
+            <circle cx="110" cy="110" r="65" fill="none" stroke="#f4f1ea" stroke-width="1" stroke-dasharray="3 4"/>
+            <g stroke="#d7ccc8" stroke-width="2">
+              <line x1="110" y1="10" x2="110" y2="20"/>
+              <line x1="210" y1="110" x2="200" y2="110"/>
+              <line x1="110" y1="210" x2="110" y2="200"/>
+              <line x1="10" y1="110" x2="20" y2="110"/>
+            </g>
+            <g font-family="Vazirmatn, tahoma, sans-serif" font-size="14" fill="#8d6e63" text-anchor="middle" dominant-baseline="middle" font-weight="700">
+              <text x="110" y="32">۱۲</text>
+              <text x="149" y="42">۱</text>
+              <text x="178" y="71">۲</text>
+              <text x="188" y="110">۳</text>
+              <text x="178" y="149">۴</text>
+              <text x="149" y="178">۵</text>
+              <text x="110" y="188">۶</text>
+              <text x="71" y="178">۷</text>
+              <text x="42" y="149">۸</text>
+              <text x="32" y="110">۹</text>
+              <text x="42" y="71">۱۰</text>
+              <text x="71" y="42">۱۱</text>
+            </g>
+            <g id="hourHand">
+              <line x1="110" y1="110" x2="110" y2="55" stroke="#4a3b32" stroke-width="8" stroke-linecap="round"/>
+              <circle cx="110" cy="55" r="6" fill="#4a3b32"/>
+            </g>
+            <g id="minuteHand">
+              <line x1="110" y1="110" x2="110" y2="30" stroke="#8d6e63" stroke-width="5" stroke-linecap="round"/>
+              <circle cx="110" cy="30" r="5" fill="#8d6e63"/>
+            </g>
+            <circle cx="110" cy="110" r="10" fill="#4a3b32"/>
+            <circle cx="110" cy="110" r="4" fill="#fffdf9"/>
+          </svg>
+
+          <div class="digital-time" id="digitalTime">۴:۰۰ عصر</div>
+
+          <div class="ampm-toggle">
+            <button data-period="صبح">صبح ☀️</button>
+            <button data-period="عصر" class="active">عصر 🌙</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="summary" id="summary"></div>
+      <button class="btn btn-primary" id="btn-submit" style="width: 100%;">ثبت کردن</button>
+    </div>
+
+    <!-- صفحه ۳: موفقیت -->
+    <div class="screen" id="screen-success">
+      <div class="success-icon">✓</div>
+      <h2>انتخاب‌هات ثبت شد.</h2>
+      <p style="color: #8d6e63;">برای هماهنگی نهایی باهات در تماس می‌مونم.</p>
+    </div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzHzmbEJCB2WD_td28GPX3lpDKSG9u3lQsyTBtVf0-jEoBz5tbto6YU3GD_WxvbKG11/exec';
+
+    const state = {
+      days: [],
+      cafe: '',
+      hour: 4,
+      minute: 0,
+      period: 'عصر'
+    };
+
+    let hasSubmitted = false;
+
+    // ارسال مشترک برای «آره» و «نه»
+    function sendToSheet(data) {
+      return fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify(data)
+      });
+    }
+
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      window.scrollTo(0, 0);
+    }
+
+    document.getElementById('btn-yes').addEventListener('click', () => showScreen('screen-details'));
+
+    function setupMultiChips(containerId, key) {
+      const container = document.getElementById(containerId);
+      const order = [...container.querySelectorAll('.chip')].map(c => c.dataset.value);
+
+      container.addEventListener('click', (e) => {
+        const chip = e.target.closest('.chip');
+        if (!chip) return;
+        chip.classList.toggle('selected');
+        const value = chip.dataset.value;
+        const arr = state[key];
+        const idx = arr.indexOf(value);
+        if (idx === -1) arr.push(value);
+        else arr.splice(idx, 1);
+        arr.sort((a, b) => order.indexOf(a) - order.indexOf(b));
+        updateSummary();
+      });
+    }
+
+    setupMultiChips('dayChips', 'days');
+
+    const cafeOptions = document.getElementById('cafeOptions');
+    cafeOptions.addEventListener('click', (e) => {
+      const option = e.target.closest('.cafe-option');
+      if (!option) return;
+
+      state.cafe = option.dataset.value;
+      cafeOptions.querySelectorAll('.cafe-option').forEach(button => {
+        button.setAttribute('aria-pressed', String(button === option));
+      });
+      updateSummary();
+    });
+
+    // اگر فایل عکس پیدا نشود، جای آن یک کادر ساده نمایش داده می‌شود.
+    cafeOptions.addEventListener('error', (e) => {
+      if (e.target.matches('img')) {
+        e.target.closest('.cafe-option')?.classList.add('image-missing');
+      }
+    }, true);
+
+    document.querySelectorAll('.ampm-toggle button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.ampm-toggle button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        state.period = btn.dataset.period;
+        updateClock();
+      });
+    });
+
+    const clock = document.getElementById('clock');
+    const hourHand = document.getElementById('hourHand');
+    const minuteHand = document.getElementById('minuteHand');
+    const digitalTime = document.getElementById('digitalTime');
+
+    let activeHand = null;
+
+    function toPersianNum(n) {
+      return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+    }
+
+    function updateClock() {
+      const hourAngle = (state.hour % 12) * 30;
+      const minuteAngle = state.minute * 6;
+      hourHand.setAttribute('transform', `rotate(${hourAngle} 110 110)`);
+      minuteHand.setAttribute('transform', `rotate(${minuteAngle} 110 110)`);
+
+      const h = state.hour === 0 ? 12 : state.hour;
+      const m = String(state.minute).padStart(2, '0');
+      digitalTime.textContent = `${toPersianNum(h)}:${toPersianNum(m)} ${state.period}`;
+      updateSummary();
+    }
+
+    function updateSummary() {
+      const parts = [];
+      if (state.days.length) parts.push('روزها: ' + state.days.join('، '));
+      if (state.cafe) parts.push('کافه: ' + state.cafe);
+      const h = state.hour === 0 ? 12 : state.hour;
+      parts.push(`ساعت: ${toPersianNum(h)}:${toPersianNum(String(state.minute).padStart(2, '0'))} ${state.period}`);
+      const el = document.getElementById('summary');
+      el.textContent = parts.length > 1 ? parts.join('  •  ') : '';
+    }
+
+    function getAngleFromEvent(e) {
+      const rect = clock.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const dx = e.clientX - cx;
+      const dy = e.clientY - cy;
+      let angle = Math.atan2(dy, dx) * 180 / Math.PI + 90;
+      if (angle < 0) angle += 360;
+      return angle;
+    }
+
+    function setHandFromAngle(angle) {
+      if (activeHand === 'hour') {
+        let hour = Math.round(angle / 30) % 12;
+        if (hour === 0) hour = 12;
+        state.hour = hour;
+      } else if (activeHand === 'minute') {
+        let minute = Math.round(angle / 6) % 60;
+        state.minute = minute;
+      }
+      updateClock();
+    }
+
+    clock.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      const rect = clock.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const distance = Math.sqrt((e.clientX - cx) ** 2 + (e.clientY - cy) ** 2);
+      const clockRadius = rect.width / 2;
+
+      activeHand = distance < clockRadius * 0.55 ? 'hour' : 'minute';
+
+      clock.setPointerCapture(e.pointerId);
+      setHandFromAngle(getAngleFromEvent(e));
+    });
+
+    clock.addEventListener('pointermove', (e) => {
+      if (!activeHand) return;
+      e.preventDefault();
+      setHandFromAngle(getAngleFromEvent(e));
+    });
+
+    function endDrag() { activeHand = null; }
+    clock.addEventListener('pointerup', endDrag);
+    clock.addEventListener('pointercancel', endDrag);
+
+    updateClock();
+
+    // ---------- ثبت «آره» ----------
+    document.getElementById('btn-submit').addEventListener('click', () => {
+      if (!state.days.length) { alert('لطفاً حداقل یک روز رو انتخاب کن.'); return; }
+      if (!state.cafe) { alert('لطفاً یک کافه رو انتخاب کن.'); return; }
+      if (hasSubmitted) return;
+
+      const h = state.hour === 0 ? 12 : state.hour;
+      const timeStr = `${h}:${String(state.minute).padStart(2, '0')} ${state.period}`;
+
+      const data = {
+        answer: 'آره',
+        day: state.days.join('، '),
+        time: timeStr,
+        cafe: state.cafe,
+        drink: '' // برای سازگاری با نسخه‌ی قبلی Google Apps Script خالی نگه داشته شده است.
+      };
+
+      const btn = document.getElementById('btn-submit');
+      btn.disabled = true;
+      btn.textContent = 'در حال ارسال...';
+      hasSubmitted = true;
+
+      sendToSheet(data)
+        .then(() => showScreen('screen-success'))
+        .catch((err) => {
+          console.error(err);
+          hasSubmitted = false;
+          alert('خطا در ارسال. لطفاً دوباره تلاش کن.');
+          btn.disabled = false;
+          btn.textContent = 'ثبت کن';
+        });
+    });
+
+    // ---------- جابه‌جایی کوتاه دکمه «نه» ----------
+    const noBtn = document.getElementById('btn-no');
+    let noBtnIsFloating = false;
+    let lastMoveTime = 0;
+
+    const MIN_STEP = 62;
+    const MAX_STEP = 84;
+
+    function goToNoScreen() {
+      noBtn.style.display = 'none';
+      showScreen('screen-no');
+
+      if (!hasSubmitted) {
+        hasSubmitted = true;
+        sendToSheet({ answer: 'نه', drink: '', cafe: '', time: '', day: '' })
+          .catch(err => console.error('خطا در ثبت نه:', err));
+      }
+    }
+
+    function moveNoButton(event) {
+      const now = Date.now();
+      if (now - lastMoveTime < 100) return true;
+      lastMoveTime = now;
+
+      if (!noBtnIsFloating) {
+        const rect = noBtn.getBoundingClientRect();
+        const placeholder = noBtn.cloneNode(true);
+        placeholder.removeAttribute('id');
+        placeholder.disabled = true;
+        placeholder.style.visibility = 'hidden';
+        placeholder.style.pointerEvents = 'none';
+        noBtn.parentNode.insertBefore(placeholder, noBtn);
+
+        noBtn.style.position = 'fixed';
+        noBtn.style.left = rect.left + 'px';
+        noBtn.style.top = rect.top + 'px';
+        noBtn.style.width = rect.width + 'px';
+        noBtn.style.height = rect.height + 'px';
+        noBtn.style.margin = '0';
+        noBtn.style.zIndex = '9999';
+        noBtn.style.transition = 'left 0.24s ease, top 0.24s ease';
+        noBtnIsFloating = true;
+      }
+
+      const btnW = noBtn.offsetWidth;
+      const btnH = noBtn.offsetHeight;
+      const padding = 16;
+      const maxX = Math.max(padding, window.innerWidth - btnW - padding);
+      const maxY = Math.max(padding, window.innerHeight - btnH - padding);
+      const currentX = Math.min(maxX, Math.max(padding, parseFloat(noBtn.style.left)));
+      const currentY = Math.min(maxY, Math.max(padding, parseFloat(noBtn.style.top)));
+
+      const pointer = event?.touches?.[0] || event;
+      const pointerX = Number.isFinite(pointer?.clientX) ? pointer.clientX : null;
+      const pointerY = Number.isFinite(pointer?.clientY) ? pointer.clientY : null;
+
+      let candidates = [];
+      for (let i = 0; i < 36; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const distance = MIN_STEP + Math.random() * (MAX_STEP - MIN_STEP);
+        const x = currentX + Math.cos(angle) * distance;
+        const y = currentY + Math.sin(angle) * distance;
+
+        if (x < padding || x > maxX || y < padding || y > maxY) continue;
+
+        const moved = Math.hypot(x - currentX, y - currentY);
+        const centerX = x + btnW / 2;
+        const centerY = y + btnH / 2;
+        const pointerClearance = pointerX === null ? Infinity :
+          Math.hypot(centerX - pointerX, centerY - pointerY);
+
+        if (moved >= 48 && pointerClearance >= 48) {
+          candidates.push({ x, y });
+        }
+      }
+
+      let target;
+      if (candidates.length) {
+        target = candidates[Math.floor(Math.random() * candidates.length)];
+      } else {
+        // نزدیک لبه‌ی صفحه، نزدیک‌ترین جابه‌جایی ممکن به سمت داخل انتخاب می‌شود.
+        const angleToCenter = Math.atan2(
+          window.innerHeight / 2 - (currentY + btnH / 2),
+          window.innerWidth / 2 - (currentX + btnW / 2)
+        );
+        const x = Math.min(maxX, Math.max(padding, currentX + Math.cos(angleToCenter) * MIN_STEP));
+        const y = Math.min(maxY, Math.max(padding, currentY + Math.sin(angleToCenter) * MIN_STEP));
+        target = { x, y };
+      }
+
+      noBtn.style.left = target.x + 'px';
+      noBtn.style.top = target.y + 'px';
+      moveCount++;
+      return true;
+    }
+
+    let moveCount = 0;
+    noBtn.addEventListener('mouseenter', (e) => moveNoButton(e));
+
+    noBtn.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      moveNoButton(e);
+    }, { passive: false });
+
+    noBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      moveNoButton(e);
+    });
+
+    window.addEventListener('resize', () => {
+      if (!noBtnIsFloating) return;
+      const btnW = noBtn.offsetWidth;
+      const btnH = noBtn.offsetHeight;
+      const padding = 20;
+      const maxX = Math.max(padding, window.innerWidth - btnW - padding);
+      const maxY = Math.max(padding, window.innerHeight - btnH - padding);
+      const curX = parseFloat(noBtn.style.left);
+      const curY = parseFloat(noBtn.style.top);
+      noBtn.style.left = Math.min(maxX, Math.max(padding, curX)) + 'px';
+      noBtn.style.top = Math.min(maxY, Math.max(padding, curY)) + 'px';
+    });
+  </script>
+</body>
+</html>
