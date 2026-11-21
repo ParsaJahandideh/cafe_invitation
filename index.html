@@ -88,57 +88,6 @@
     box-shadow: 0 0 0 2px rgba(209, 138, 58, 0.4);
   }
 
-  .cafe-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-    margin-top: 0.5rem;
-  }
-  .cafe-option {
-    padding: 0;
-    overflow: hidden;
-    border: 2px solid #e0d7d0;
-    border-radius: 16px;
-    background: #fff;
-    color: #4a3b32;
-    font-family: inherit;
-    cursor: pointer;
-    text-align: center;
-    transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
-  }
-  .cafe-option:active { transform: scale(0.98); }
-  .cafe-option[aria-pressed="true"] {
-    border-color: #8d6e63;
-    box-shadow: 0 0 0 3px rgba(141, 110, 99, 0.18);
-    background: #f8f3ef;
-  }
-  .cafe-option img {
-    display: block;
-    width: 100%;
-    aspect-ratio: 4 / 3;
-    object-fit: cover;
-    background: #eee8e2;
-  }
-  .cafe-fallback {
-    display: none;
-    width: 100%;
-    aspect-ratio: 4 / 3;
-    align-items: center;
-    justify-content: center;
-    padding: 12px;
-    background: #eee8e2;
-    color: #8d6e63;
-    font-size: 0.9rem;
-  }
-  .cafe-option.image-missing img { display: none; }
-  .cafe-option.image-missing .cafe-fallback { display: flex; }
-  .cafe-name {
-    display: block;
-    padding: 11px 8px;
-    font-size: 0.95rem;
-    font-weight: 700;
-  }
-
   .step { margin-bottom: 1.5rem; }
   .step-label {
     display: block;
@@ -272,19 +221,6 @@
       </div>
 
       <div class="step">
-        <label class="step-label">کدوم کافه رو ترجیح می‌دی؟</label>
-        <div class="cafe-grid" id="cafeOptions">
-          <button class="cafe-option" type="button" data-value="کافه رئیس پاسداران" aria-pressed="false">
-            <img src="images/cafe-raees-pasdaran.png" alt="تصویر کافه رئیس پاسداران" loading="lazy">
-            <span class="cafe-fallback">تصویر کافه رئیس پاسداران</span>
-            <span class="cafe-name">کافه رئیس پاسداران</span>
-          </button>
-          
-          <!-- برای اضافه کردن کافه، یکی از دکمه‌های بالا را کپی و نام، data-value و مسیر عکس را عوض کن. -->
-        </div>
-      </div>
-
-      <div class="step">
         <label class="step-label">چه ساعتی؟ (عقربه‌ها رو بکش)</label>
         <div class="clock-container">
           <svg class="clock" id="clock" viewBox="0 0 220 220">
@@ -348,7 +284,6 @@
 
     const state = {
       days: [],
-      cafe: '',
       hour: 4,
       minute: 0,
       period: 'عصر'
@@ -394,25 +329,6 @@
 
     setupMultiChips('dayChips', 'days');
 
-    const cafeOptions = document.getElementById('cafeOptions');
-    cafeOptions.addEventListener('click', (e) => {
-      const option = e.target.closest('.cafe-option');
-      if (!option) return;
-
-      state.cafe = option.dataset.value;
-      cafeOptions.querySelectorAll('.cafe-option').forEach(button => {
-        button.setAttribute('aria-pressed', String(button === option));
-      });
-      updateSummary();
-    });
-
-    // اگر فایل عکس پیدا نشود، جای آن یک کادر ساده نمایش داده می‌شود.
-    cafeOptions.addEventListener('error', (e) => {
-      if (e.target.matches('img')) {
-        e.target.closest('.cafe-option')?.classList.add('image-missing');
-      }
-    }, true);
-
     document.querySelectorAll('.ampm-toggle button').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.ampm-toggle button').forEach(b => b.classList.remove('active'));
@@ -448,7 +364,6 @@
     function updateSummary() {
       const parts = [];
       if (state.days.length) parts.push('روزها: ' + state.days.join('، '));
-      if (state.cafe) parts.push('کافه: ' + state.cafe);
       const h = state.hour === 0 ? 12 : state.hour;
       parts.push(`ساعت: ${toPersianNum(h)}:${toPersianNum(String(state.minute).padStart(2, '0'))} ${state.period}`);
       const el = document.getElementById('summary');
@@ -507,7 +422,6 @@
     // ---------- ثبت «آره» ----------
     document.getElementById('btn-submit').addEventListener('click', () => {
       if (!state.days.length) { alert('لطفاً حداقل یک روز رو انتخاب کن.'); return; }
-      if (!state.cafe) { alert('لطفاً یک کافه رو انتخاب کن.'); return; }
       if (hasSubmitted) return;
 
       const h = state.hour === 0 ? 12 : state.hour;
@@ -517,7 +431,7 @@
         answer: 'آره',
         day: state.days.join('، '),
         time: timeStr,
-        cafe: state.cafe,
+        cafe: '',
         drink: '' // برای سازگاری با نسخه‌ی قبلی Google Apps Script خالی نگه داشته شده است.
       };
 
